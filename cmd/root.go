@@ -8,31 +8,27 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"michaelvanolst.nl/scraper/storage"
+	"michaelvanolst.nl/scraper/datastore"
 )
 
 var configFile string
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	// cobra.OnInitialize(initDatabase)
+	cobra.OnInitialize(initApp)
 	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", "config file (default is $HOME/.config.json)")
 }
 
 func initConfig() {
-	// Don't forget to read config either from cfgFile or from home directory!
 	if configFile != "" {
-		// Use config file from the flag.
 		viper.SetConfigFile(configFile)
 	} else {
-		// Find home directory.
 		home, err := homedir.Dir()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		// Search config in home directory with name ".cobra" (without extension).
 		viper.AddConfigPath(".")
 		viper.AddConfigPath(home)
 		viper.SetConfigName(".config")
@@ -47,15 +43,23 @@ func initConfig() {
 	}
 }
 
-var store *storage.Storage
+// App ...
+type App struct {
+	database datastore.Datastore
+}
 
-func initDatabase() {
-	storage, err := storage.New()
+var app *App
+
+func initApp() {
+
+	db, err := datastore.New()
 	if err != nil {
-		log.Printf("Error starting db %v", err)
+		fmt.Errorf("Error occured: connecting DB: %v", err)
 		return
 	}
-	store = storage
+	app = &App{
+		database: db,
+	}
 }
 
 var rootCmd = &cobra.Command{

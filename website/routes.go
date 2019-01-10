@@ -1,4 +1,4 @@
-package websites
+package website
 
 import (
 	"net/http"
