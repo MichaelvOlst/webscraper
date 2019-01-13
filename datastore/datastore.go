@@ -1,10 +1,19 @@
 package datastore
 
 import (
-	"github.com/spf13/viper"
 	"michaelvanolst.nl/scraper/datastore/sqlite"
 	"michaelvanolst.nl/scraper/website"
 )
+
+// Database has the config for datastore
+type Database struct {
+	Driver   string `default:"sqlite3"`
+	Host     string `default:""`
+	User     string `default:""`
+	Password string `default:""`
+	Name     string `default:"scraper.db"`
+	SSLMode  string `default:""`
+}
 
 // Datastore represents a database implementations
 type Datastore interface {
@@ -24,9 +33,7 @@ func New() (Datastore, error) {
 	var store Datastore
 	var err error
 
-	if viper.Get("database.driver") == "sqlite3" {
-		store, err = sqlite.New()
-	}
+	store, err = sqlite.New()
 
 	return store, err
 }

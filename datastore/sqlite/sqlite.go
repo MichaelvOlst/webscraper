@@ -2,35 +2,37 @@ package sqlite
 
 import (
 	"database/sql"
+	"fmt"
 
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/spf13/viper"
+	_ "github.com/mattn/go-sqlite3" // ...
 )
 
-// SqlStore ...
-type SqlStore struct {
+// SQLStore ...
+type SQLStore struct {
 	*sql.DB
 }
 
 // Close the database
-func (db *SqlStore) Close() error {
-	return db.Close()
+func (s *SQLStore) Close() error {
+	return s.DB.Close()
 }
 
 // New returns a new sqllite connection
-func New() (*SqlStore, error) {
+func New() (*SQLStore, error) {
 
-	databaseFile := viper.Get("database.filename")
+	// databaseFile := viper.Get("database.filename")
 
-	db, err := sql.Open("sqlite3", databaseFile.(string))
+	db, err := sql.Open("sqlite3", "./scraper.db")
 	if err != nil {
 		return nil, err
 	}
-
+	Get
 	err = db.Ping()
 	if err != nil {
 		return nil, err
 	}
 
-	return &SqlStore{db}, nil
+	fmt.Printf("%p\n", db)
+
+	return &SQLStore{db}, nil
 }
