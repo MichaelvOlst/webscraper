@@ -39,7 +39,7 @@ func initApp() {
 		os.Exit(1)
 	}
 
-	db, err := datastore.New()
+	db, err := datastore.New(config.Database)
 	if err != nil {
 		log.Errorf("Cannot init db error: %v", err)
 		os.Exit(1)

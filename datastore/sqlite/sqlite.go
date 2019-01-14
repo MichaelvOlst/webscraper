@@ -26,7 +26,7 @@ func New() (*SQLStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	Get
+
 	err = db.Ping()
 	if err != nil {
 		return nil, err

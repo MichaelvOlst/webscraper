@@ -8,12 +8,14 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
 	log "github.com/sirupsen/logrus"
+	"michaelvanolst.nl/scraper/api"
 	"michaelvanolst.nl/scraper/datastore"
 )
 
 // Config hold the config for this app
 type Config struct {
-	Database *datastore.Database
+	Database *datastore.Config
+	Server   *api.Config
 }
 
 // Load loads the config file
@@ -48,7 +50,7 @@ func Parse() (*Config, error) {
 	var cfg Config
 
 	// with config file loaded into env values, we can now parse env into our config struct
-	err := envconfig.Process("Scraper", &cfg)
+	err := envconfig.Process("app", &cfg)
 	if err != nil {
 		return nil, err
 	}

@@ -5,16 +5,6 @@ import (
 	"michaelvanolst.nl/scraper/website"
 )
 
-// Database has the config for datastore
-type Database struct {
-	Driver   string `default:"sqlite3"`
-	Host     string `default:""`
-	User     string `default:""`
-	Password string `default:""`
-	Name     string `default:"scraper.db"`
-	SSLMode  string `default:""`
-}
-
 // Datastore represents a database implementations
 type Datastore interface {
 
@@ -28,12 +18,23 @@ type Datastore interface {
 }
 
 // New returns a new Datastore
-func New() (Datastore, error) {
+func New(c *Config) (Datastore, error) {
 
 	var store Datastore
 	var err error
-
-	store, err = sqlite.New()
+	if c.Driver == "sqlite3" {
+		store, err = sqlite.New()
+	}
 
 	return store, err
+}
+
+// Config holds the database config
+type Config struct {
+	Driver   string `default:"sqlite3"`
+	Host     string `default:""`
+	User     string `default:""`
+	Password string `default:""`
+	Name     string `default:"scraper.db"`
+	SSLMode  string `default:""`
 }
