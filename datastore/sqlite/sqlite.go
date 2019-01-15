@@ -2,7 +2,6 @@ package sqlite
 
 import (
 	"database/sql"
-	"fmt"
 
 	_ "github.com/mattn/go-sqlite3" // ...
 )
@@ -32,7 +31,10 @@ func New() (*SQLStore, error) {
 		return nil, err
 	}
 
-	fmt.Printf("%p\n", db)
+	err = Migrate(db)
+	if err != nil {
+		return nil, err
+	}
 
 	return &SQLStore{db}, nil
 }

@@ -2,17 +2,17 @@ package datastore
 
 import (
 	"michaelvanolst.nl/scraper/datastore/sqlite"
-	"michaelvanolst.nl/scraper/website"
+	"michaelvanolst.nl/scraper/websites"
 )
 
 // Datastore represents a database implementations
 type Datastore interface {
 
 	// websites
-	GetWebsites() ([]*website.Website, error)
-	GetWebsite(id int64) (*website.Website, error)
-	SaveWebsite(w *website.Website) error
-	DeleteWebsite(w *website.Website) error
+	GetWebsites() ([]*websites.Website, error)
+	GetWebsite(id int64) (*websites.Website, error)
+	SaveWebsite(w *websites.Website) error
+	DeleteWebsite(w *websites.Website) error
 
 	Close() error
 }

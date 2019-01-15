@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"michaelvanolst.nl/scraper/website"
+	"michaelvanolst.nl/scraper/websites"
 )
 
 func init() {
@@ -13,6 +13,6 @@ var scrapeCmd = &cobra.Command{
 	Use:   "scrape",
 	Short: "Scrape the save urls",
 	Run: func(cmd *cobra.Command, args []string) {
-		website.Scrape()
+		websites.Scrape()
 	},
 }

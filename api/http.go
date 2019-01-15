@@ -11,8 +11,8 @@ import (
 type Handler func(w http.ResponseWriter, r *http.Request) error
 
 type envelope struct {
-	Data  interface{} `json:",omitempty"`
-	Error interface{} `json:",omitempty"`
+	Result interface{} `json:"result,omitempty"`
+	Error  interface{} `json:"error,omitempty"`
 }
 
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
