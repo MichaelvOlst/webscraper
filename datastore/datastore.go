@@ -23,7 +23,7 @@ func New(c *Config) (Datastore, error) {
 	var store Datastore
 	var err error
 	if c.Driver == "sqlite3" {
-		store, err = sqlite.New()
+		store, err = sqlite.New(c.Name)
 	}
 
 	return store, err

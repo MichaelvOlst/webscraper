@@ -17,11 +17,9 @@ func (s *SQLStore) Close() error {
 }
 
 // New returns a new sqllite connection
-func New() (*SQLStore, error) {
+func New(filename string) (*SQLStore, error) {
 
-	// databaseFile := viper.Get("database.filename")
-
-	db, err := sql.Open("sqlite3", "./scraper.db")
+	db, err := sql.Open("sqlite3", filename)
 	if err != nil {
 		return nil, err
 	}

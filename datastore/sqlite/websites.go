@@ -33,15 +33,50 @@ func (db *SQLStore) GetWebsites() ([]*websites.Website, error) {
 
 // GetWebsite gets a single website
 func (db *SQLStore) GetWebsite(id int64) (*websites.Website, error) {
-	return nil, nil
+
+	stmt, err := db.Prepare("SELECT * FROM websites WHERE id=?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	w := &websites.Website{}
+	err = stmt.QueryRow(id).Scan(&w.ID, &w.Name, &w.URL)
+	if err != nil {
+		return nil, err
+	}
+
+	return w, nil
 }
 
 // SaveWebsite saves a website
 func (db *SQLStore) SaveWebsite(w *websites.Website) error {
+
+	stmt, err := db.Prepare("INSERT INTO websites (name, url) VALUES (?, ?)")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(w.Name, w.URL)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // DeleteWebsite deletes a website
 func (db *SQLStore) DeleteWebsite(w *websites.Website) error {
+	stmt, err := db.Prepare("DELETE from websites WHERE id=?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(w.ID)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
