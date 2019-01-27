@@ -33,8 +33,5 @@ var serveCmd = &cobra.Command{
 
 		logrus.Infof("Server is now listening on http://%s", server.Addr)
 		logrus.Fatal(server.ListenAndServe())
-
-		// fmt.Println(app.config.Server.Port)
-
 	},
 }

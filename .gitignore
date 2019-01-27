@@ -1,4 +1,5 @@
 *.exe
 *.exe~
 scraper
+scraper.db
 config.json
