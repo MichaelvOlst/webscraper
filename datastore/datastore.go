@@ -8,11 +8,17 @@ import (
 // Datastore represents a database implementations
 type Datastore interface {
 
-	// websites
+	// Websites
 	GetWebsites() ([]*websites.Website, error)
 	GetWebsite(id int64) (*websites.Website, error)
 	SaveWebsite(w *websites.Website) error
 	DeleteWebsite(w *websites.Website) error
+
+	// Attributes
+	GetAttributes(websiteID int64) ([]*websites.Attribute, error)
+	GetAttribute(websiteID, id int64) (*websites.Attribute, error)
+	SaveAttribute(a *websites.Attribute) error
+	DeleteAttribute(a *websites.Attribute) error
 
 	Close() error
 }

@@ -16,7 +16,7 @@ func (db *SQLStore) GetWebsites() ([]*websites.Website, error) {
 
 	for rows.Next() {
 		w := &websites.Website{}
-		err := rows.Scan(&w.ID, &w.Name, &w.URL)
+		err := rows.Scan(&w.ID, &w.Name, &w.URL, &w.Holder)
 		if err != nil {
 			return nil, err
 		}
@@ -41,7 +41,7 @@ func (db *SQLStore) GetWebsite(id int64) (*websites.Website, error) {
 	defer stmt.Close()
 
 	w := &websites.Website{}
-	err = stmt.QueryRow(id).Scan(&w.ID, &w.Name, &w.URL)
+	err = stmt.QueryRow(id).Scan(&w.ID, &w.Name, &w.URL, &w.Holder)
 	if err != nil {
 		return nil, err
 	}
@@ -52,12 +52,12 @@ func (db *SQLStore) GetWebsite(id int64) (*websites.Website, error) {
 // SaveWebsite saves a website
 func (db *SQLStore) SaveWebsite(w *websites.Website) error {
 
-	stmt, err := db.Prepare("INSERT INTO websites (name, url) VALUES (?, ?)")
+	stmt, err := db.Prepare("INSERT INTO websites (name, url, holder) VALUES (?, ?, ?)")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(w.Name, w.URL)
+	_, err = stmt.Exec(w.Name, w.URL, w.Holder)
 	if err != nil {
 		return err
 	}

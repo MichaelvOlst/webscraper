@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
+	"strings"
+	"sync"
 
 	"michaelvanolst.nl/scraper/websites"
 
@@ -23,6 +26,7 @@ var scrapeCmd = &cobra.Command{
 	Short: "Scrape the save urls",
 	Run: func(cmd *cobra.Command, args []string) {
 		urls, err := app.database.GetWebsites()
+
 		if err != nil {
 			logrus.Error(err)
 			os.Exit(1)
@@ -31,21 +35,16 @@ var scrapeCmd = &cobra.Command{
 		// start := time.Now()
 		ch := make(chan response, len(urls))
 		defer close(ch)
+
+		var wg sync.WaitGroup
+
+		wg.Add(len(urls))
+
 		for _, url := range urls {
-			go makeRequest(url, ch)
+			go makeRequest(url, ch, &wg)
 		}
 
-		for r := range ch {
-
-			fmt.Println(r.status + " - " + r.url)
-
-		}
-
-		// for range urls {
-		// 	fmt.Println(<-ch)
-		// }
-		// fmt.Printf("%.2fs elapsed\n", time.Since(start).Seconds())
-
+		wg.Wait()
 	},
 }
 
@@ -57,47 +56,42 @@ type response struct {
 	error  error
 }
 
-func makeRequest(url *websites.Website, ch chan<- response) {
+func makeRequest(w *websites.Website, ch chan<- response, wg *sync.WaitGroup) {
 	// start := time.Now()
-	r, err := http.Get(url.URL)
+	defer wg.Done()
+	r, err := http.Get(w.URL)
+	if err != nil {
+		logrus.Error(err)
+	}
+	defer r.Body.Close()
+
+	pu, err := url.Parse(w.URL)
 	if err != nil {
 		logrus.Error(err)
 	}
 
-	defer r.Body.Close()
+	wURL := fmt.Sprintf("%s://%s", pu.Scheme, pu.Host)
 
 	doc, err := goquery.NewDocumentFromReader(r.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	doc.Find(".aanbodEntry").Each(func(i int, s *goquery.Selection) {
-		// For each item found, get the band and title
-		street := s.Find(".street-address").Text()
-		link, _ := s.Find(".aanbodEntryLink").Attr("href")
-		// title := s.Find("i").Text()
-		fmt.Printf("house %d: %s --- %s\n", i, street, link)
+	doc.Find(w.Holder).Each(func(i int, s *goquery.Selection) {
+
+		status := s.Find(".objectstatusbanner").Text()
+		if strings.Contains(strings.ToLower(status), "nieuw") {
+
+			street := s.Find(".street-address").Text()
+			link, _ := s.Find(".aanbodEntryLink").Attr("href")
+
+			fmt.Printf("%s %s --- %s%s\n", street, status, wURL, link)
+		}
 	})
 
-	// file, err := os.Create(url.Name + ".html")
-	// if err != nil {
-	// 	logrus.Error(err)
-	// }
-	// defer file.Close()
-
-	// _, err = io.Copy(file, r.Body)
-	// if err != nil {
-	// 	logrus.Error(err)
-	// }
-
-	// secs := time.Since(start).Seconds()
-	// body, err := ioutil.ReadAll(r.Body)
-	// if err != nil {
-	// 	logrus.Error(err)
-	// }
 	ch <- response{
-		name:   url.Name,
-		url:    url.URL,
+		name:   w.Name,
+		url:    w.URL,
 		body:   r.Body,
 		status: r.Status,
 		error:  nil,

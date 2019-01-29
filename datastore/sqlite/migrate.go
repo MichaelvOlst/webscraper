@@ -18,7 +18,8 @@ func createWebsitesTable(db *sql.DB) error {
 	CREATE TABLE IF NOT EXISTS websites (
 		id INTEGER PRIMARY KEY, 
 		name VARCHAR(255), 
-		url VARCHAR(255)
+		url VARCHAR(255),
+		holder VARCHAR(255)
 	)
 	`
 	statement, err := db.Prepare(query)
