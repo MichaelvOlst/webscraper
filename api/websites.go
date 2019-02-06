@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"michaelvanolst.nl/scraper/websites"
+	"michaelvanolst.nl/scraper/models"
 )
 
 // GET /api/websites
@@ -37,7 +37,7 @@ func (api *API) getWebsiteHandler(w http.ResponseWriter, r *http.Request) error 
 
 // POST /api/websites
 func (api *API) saveWebsitesHandler(w http.ResponseWriter, r *http.Request) error {
-	var s websites.Website
+	var s models.Website
 
 	err := json.NewDecoder(r.Body).Decode(&s)
 	if err != nil {
@@ -59,7 +59,7 @@ func (api *API) deleteWebsitesHandler(w http.ResponseWriter, r *http.Request) er
 		return err
 	}
 
-	if err := api.database.DeleteWebsite(&websites.Website{ID: id}); err != nil {
+	if err := api.database.DeleteWebsite(&models.Website{ID: id}); err != nil {
 		return err
 	}
 

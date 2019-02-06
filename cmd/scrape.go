@@ -9,12 +9,11 @@ import (
 	"strings"
 	"sync"
 
-	"michaelvanolst.nl/scraper/websites"
-
 	"github.com/PuerkitoBio/goquery"
 	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"michaelvanolst.nl/scraper/models"
 )
 
 func init() {
@@ -56,7 +55,7 @@ type response struct {
 	error  error
 }
 
-func makeRequest(w *websites.Website, ch chan<- response, wg *sync.WaitGroup) {
+func makeRequest(w *models.Website, ch chan<- response, wg *sync.WaitGroup) {
 	// start := time.Now()
 	defer wg.Done()
 	r, err := http.Get(w.URL)
@@ -70,7 +69,7 @@ func makeRequest(w *websites.Website, ch chan<- response, wg *sync.WaitGroup) {
 		logrus.Error(err)
 	}
 
-	wURL := fmt.Sprintf("%s://%s", pu.Scheme, pu.Host)
+	websiteURL := fmt.Sprintf("%s://%s", pu.Scheme, pu.Host)
 
 	doc, err := goquery.NewDocumentFromReader(r.Body)
 	if err != nil {
@@ -79,13 +78,35 @@ func makeRequest(w *websites.Website, ch chan<- response, wg *sync.WaitGroup) {
 
 	doc.Find(w.Holder).Each(func(i int, s *goquery.Selection) {
 
-		status := s.Find(".objectstatusbanner").Text()
-		if strings.Contains(strings.ToLower(status), "nieuw") {
+		attributes := make(map[string]string)
+		for _, a := range w.Attributes {
+			attributes[a.Type] = a.Search
+		}
 
-			street := s.Find(".street-address").Text()
-			link, _ := s.Find(".aanbodEntryLink").Attr("href")
+		status := s.Find(attributes["status"]).Text()
+		if strings.Contains(strings.ToLower(status), attributes["statustext"]) {
 
-			fmt.Printf("%s %s --- %s%s\n", street, status, wURL, link)
+			var l models.Link
+
+			address := s.Find(attributes["address"]).Text()
+			link, _ := s.Find(attributes["link"]).Attr("href")
+
+			price := s.Find(attributes["price"]).Text()
+			price = strings.TrimSpace(price)
+
+			l.WebsiteID = w.ID
+			l.Address = address
+			l.URL = fmt.Sprintf("%s%s", websiteURL, link)
+			l.Price = price
+			l.Status = status
+
+			err = app.database.SaveLink(&l)
+			if err != nil {
+				logrus.Error(err)
+			} else {
+				fmt.Printf("%s %s %s --- %s%s\n", address, status, price, websiteURL, link)
+			}
+
 		}
 	})
 
