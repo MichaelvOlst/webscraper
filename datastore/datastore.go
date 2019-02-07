@@ -20,7 +20,8 @@ type Datastore interface {
 	DeleteAttribute(a *models.Attribute) error
 
 	// Links
-	GetLinks() ([]*models.Link, error)
+	GetAllLinks() ([]*models.Link, error)
+	GetLinksByID(id int64) ([]*models.Link, error)
 	SaveLink(l *models.Link) error
 	CheckLinkExists(url string) (bool, error)
 

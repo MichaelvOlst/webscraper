@@ -14,7 +14,7 @@ build_path: /tmp
 build_flags: []
 build_delay: 200ns
 binary_name: scraper
-command_flags: ["scrape"]
+command_flags: ["serve"]
 command_env: []
 enable_colors: true
 log_name: ""

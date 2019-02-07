@@ -31,6 +31,8 @@ var scrapeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		logrus.Println("Scraping urls...")
+
 		// start := time.Now()
 		ch := make(chan response, len(urls))
 		defer close(ch)
@@ -40,10 +42,12 @@ var scrapeCmd = &cobra.Command{
 		wg.Add(len(urls))
 
 		for _, url := range urls {
+			logrus.Println("Scraping url " + url.URL)
 			go makeRequest(url, ch, &wg)
 		}
 
 		wg.Wait()
+		logrus.Println("Done scraping...")
 	},
 }
 
@@ -91,6 +95,9 @@ func makeRequest(w *models.Website, ch chan<- response, wg *sync.WaitGroup) {
 			address := s.Find(attributes["address"]).Text()
 			link, _ := s.Find(attributes["link"]).Attr("href")
 
+			imageURL, _ := s.Find(attributes["image"]).Attr("src")
+			// imageURLParts := strings.Split(imageURL, "?")
+
 			price := s.Find(attributes["price"]).Text()
 			price = strings.TrimSpace(price)
 
@@ -99,12 +106,13 @@ func makeRequest(w *models.Website, ch chan<- response, wg *sync.WaitGroup) {
 			l.URL = fmt.Sprintf("%s%s", websiteURL, link)
 			l.Price = price
 			l.Status = status
+			l.ImageURL = imageURL
 
 			err = app.database.SaveLink(&l)
 			if err != nil {
 				logrus.Error(err)
 			} else {
-				fmt.Printf("%s %s %s --- %s%s\n", address, status, price, websiteURL, link)
+				// fmt.Printf("%s %s %s --- %s%s\n", address, status, price, websiteURL, link)
 			}
 
 		}
