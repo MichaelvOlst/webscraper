@@ -16,6 +16,7 @@ func (api *API) Routes() *mux.Router {
 	r.Handle("/api/websites/{id:[0-9]+}", HandlerFunc(api.deleteWebsitesHandler)).Methods(http.MethodDelete)
 	r.Handle("/api/websites/{id:[0-9]+}", HandlerFunc(api.getWebsiteHandler)).Methods(http.MethodGet)
 
+	r.Handle("/api/links", HandlerFunc(api.getLinksHandler)).Methods(http.MethodGet)
 	r.Handle("/api/links/{id:[0-9]+}", HandlerFunc(api.getLinksHandler)).Methods(http.MethodGet)
 
 	r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("public"))))

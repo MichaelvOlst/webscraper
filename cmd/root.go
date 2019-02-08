@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -49,7 +51,6 @@ func initApp() {
 		database: db,
 		config:   config,
 	}
-
 }
 
 var rootCmd = &cobra.Command{
@@ -70,4 +71,30 @@ func Execute() {
 		log.Errorf("Error executing command: %v", err)
 		os.Exit(1)
 	}
+
+	ticker := time.NewTicker(1 * time.Second)
+	quit := make(chan struct{})
+	go func() {
+		var count int = 0
+		for {
+			select {
+			case <-ticker.C:
+				// do stuff
+
+				fmt.Printf("counting.. %d\n", count)
+				count++
+
+				if count > 10 {
+					close(quit)
+				}
+
+			case <-quit:
+				fmt.Printf("Done counting.. \n")
+				ticker.Stop()
+				return
+			}
+		}
+	}()
+
+	<-quit
 }

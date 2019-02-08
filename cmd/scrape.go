@@ -96,7 +96,6 @@ func makeRequest(w *models.Website, ch chan<- response, wg *sync.WaitGroup) {
 			link, _ := s.Find(attributes["link"]).Attr("href")
 
 			imageURL, _ := s.Find(attributes["image"]).Attr("src")
-			// imageURLParts := strings.Split(imageURL, "?")
 
 			price := s.Find(attributes["price"]).Text()
 			price = strings.TrimSpace(price)
@@ -110,7 +109,7 @@ func makeRequest(w *models.Website, ch chan<- response, wg *sync.WaitGroup) {
 
 			err = app.database.SaveLink(&l)
 			if err != nil {
-				logrus.Error(err)
+				logrus.Println(err)
 			} else {
 				// fmt.Printf("%s %s %s --- %s%s\n", address, status, price, websiteURL, link)
 			}
