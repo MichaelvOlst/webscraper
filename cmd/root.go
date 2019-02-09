@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -72,8 +74,25 @@ func Execute() {
 		os.Exit(1)
 	}
 
-	ticker := time.NewTicker(1 * time.Second)
-	quit := make(chan struct{})
+	runCronjob()
+}
+
+func runCronjob() {
+
+	ticker := time.NewTicker(500 * time.Millisecond)
+
+	sigs := make(chan os.Signal, 1)
+	done := make(chan struct{}, 1)
+
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		sig := <-sigs
+		fmt.Println()
+		fmt.Println(sig)
+		done <- struct{}{}
+	}()
+
 	go func() {
 		var count int = 0
 		for {
@@ -84,17 +103,18 @@ func Execute() {
 				fmt.Printf("counting.. %d\n", count)
 				count++
 
-				if count > 10 {
-					close(quit)
-				}
+				// if count > 10 {
+				// 	close(quit)
+				// }
 
-			case <-quit:
+			case <-done:
 				fmt.Printf("Done counting.. \n")
 				ticker.Stop()
 				return
 			}
 		}
 	}()
-
-	<-quit
+	fmt.Println("awaiting signal")
+	<-done
+	fmt.Println("exiting")
 }
