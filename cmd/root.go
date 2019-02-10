@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"fmt"
+	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
 
 	"michaelvanolst.nl/scraper/cronjob"
 	"michaelvanolst.nl/scraper/websites"
@@ -27,6 +25,8 @@ func init() {
 type App struct {
 	database datastore.Datastore
 	config   *config.Config
+	server   *http.Server
+	cronjob  *cronjob.Cronjob
 }
 
 var app *App
@@ -56,24 +56,24 @@ func initApp() {
 		config:   config,
 	}
 
-	c := cronjob.New(app.database)
-	c.AddJob(60*60, func() {
+	app.cronjob = cronjob.New(app.database)
+	app.cronjob.AddJob(10, func() {
 		websites.Scrape(app.database)
 	})
-	c.Start()
+	app.cronjob.Start()
 
 }
 
 var rootCmd = &cobra.Command{
 	Use:   "Scraper",
 	Short: "It scrapes websites.",
-	PersistentPostRun: func(cmd *cobra.Command, args []string) {
-		// err := app.database.Close()
-		// if err != nil {
-		// 	log.Errorf("Error closing database: %v", err)
-		// 	os.Exit(1)
-		// }
-	},
+	// PersistentPostRun: func(cmd *cobra.Command, args []string) {
+	// 	// err := app.database.Close()
+	// 	// if err != nil {
+	// 	// 	log.Errorf("Error closing database: %v", err)
+	// 	// 	os.Exit(1)
+	// 	// }
+	// },
 }
 
 // Execute ..
@@ -82,58 +82,4 @@ func Execute() {
 		log.Errorf("Error executing command: %v", err)
 		os.Exit(1)
 	}
-
-	sigs := make(chan os.Signal, 1)
-	done := make(chan struct{}, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		sig := <-sigs
-		fmt.Println()
-		fmt.Println(sig)
-		done <- struct{}{}
-	}()
-
-	fmt.Println("awaiting signal")
-	<-done
-	fmt.Println("exiting")
-	err := app.database.Close()
-	if err != nil {
-		log.Errorf("Error closing database: %v", err)
-		os.Exit(1)
-	}
 }
-
-// func runCronjob() {
-
-// 	ticker := time.NewTicker(5 * time.Second)
-
-// 	sigs := make(chan os.Signal, 1)
-// 	done := make(chan struct{}, 1)
-
-// 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-// 	go func() {
-// 		sig := <-sigs
-// 		fmt.Println()
-// 		fmt.Println(sig)
-// 		done <- struct{}{}
-// 	}()
-
-// 	go func() {
-// 		// var count int = 0
-// 		for {
-// 			select {
-// 			case <-ticker.C:
-// 				websites.Scrape(app.database)
-// 			case <-done:
-// 				fmt.Printf("Done counting.. \n")
-// 				ticker.Stop()
-// 				return
-// 			}
-// 		}
-// 	}()
-// 	fmt.Println("awaiting signal")
-// 	<-done
-// 	fmt.Println("exiting")
-// }

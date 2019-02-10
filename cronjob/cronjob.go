@@ -1,7 +1,6 @@
 package cronjob
 
 import (
-	"fmt"
 	"time"
 
 	"michaelvanolst.nl/scraper/datastore"
@@ -53,7 +52,6 @@ func (c *Cronjob) Start() {
 					j.task()
 				case <-j.quit:
 					ticker.Stop()
-					fmt.Printf("Stopping job \n")
 					return
 				}
 			}
@@ -69,37 +67,3 @@ func (c *Cronjob) Close() {
 		close(j.quit)
 	}
 }
-
-// func runCronjob() {
-
-// 	ticker := time.NewTicker(5 * time.Second)
-
-// 	sigs := make(chan os.Signal, 1)
-// 	done := make(chan struct{}, 1)
-
-// 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-// 	go func() {
-// 		sig := <-sigs
-// 		fmt.Println()
-// 		fmt.Println(sig)
-// 		done <- struct{}{}
-// 	}()
-
-// 	go func() {
-// 		// var count int = 0
-// 		for {
-// 			select {
-// 			case <-ticker.C:
-// 				websites.Scrape(app.database)
-// 			case <-done:
-// 				fmt.Printf("Done counting.. \n")
-// 				ticker.Stop()
-// 				return
-// 			}
-// 		}
-// 	}()
-// 	fmt.Println("awaiting signal")
-// 	<-done
-// 	fmt.Println("exiting")
-// }

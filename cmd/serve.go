@@ -1,8 +1,12 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -24,14 +28,48 @@ var serveCmd = &cobra.Command{
 
 		addr := fmt.Sprintf("%s:%s", app.config.Server.Host, app.config.Server.Port)
 
-		server := &http.Server{
+		app.server = &http.Server{
 			Addr:         addr,
 			Handler:      h,
 			ReadTimeout:  10 * time.Second,
 			WriteTimeout: 10 * time.Second,
 		}
 
-		logrus.Infof("Server is now listening on http://%s", server.Addr)
-		logrus.Fatal(server.ListenAndServe())
+		sigs := make(chan os.Signal, 1)
+		done := make(chan struct{}, 1)
+		signal.Notify(sigs, os.Interrupt, os.Kill)
+
+		go func() {
+			sig := <-sigs
+			fmt.Println()
+			fmt.Println(sig)
+			done <- struct{}{}
+
+			if err := app.server.Shutdown(context.Background()); err != nil {
+				log.Printf("Unable to shut down server: %v", err)
+			} else {
+				log.Println("Server stopped")
+			}
+
+		}()
+
+		log.Printf("Starting HTTP Server. Listening at http://%s", app.server.Addr)
+		if err := app.server.ListenAndServe(); err != http.ErrServerClosed {
+			log.Printf("%v", err)
+		} else {
+			log.Println("Server closed!")
+		}
+
+		app.cronjob.Close()
+
+		err := app.database.Close()
+		if err != nil {
+			logrus.Errorf("Error closing database: %v", err)
+			os.Exit(1)
+		}
+
+		// fmt.Println("awaiting signal")
+		// <-done
+		// fmt.Println("exiting")
 	},
 }
