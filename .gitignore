@@ -3,3 +3,4 @@
 scraper
 scraper.db
 config.json
+.env

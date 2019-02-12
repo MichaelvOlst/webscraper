@@ -10,12 +10,14 @@ import (
 	log "github.com/sirupsen/logrus"
 	"michaelvanolst.nl/scraper/api"
 	"michaelvanolst.nl/scraper/datastore"
+	"michaelvanolst.nl/scraper/email"
 )
 
 // Config hold the config for this app
 type Config struct {
 	Database *datastore.Config
 	Server   *api.Config
+	Email    *email.Config
 }
 
 // Load loads the config file
