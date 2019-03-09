@@ -18,7 +18,7 @@ var configFile string
 
 func init() {
 	cobra.OnInitialize(initApp)
-	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", "config file (default is .env)")
+	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", "config file")
 }
 
 // App ...
@@ -57,7 +57,7 @@ func initApp() {
 	}
 
 	app.cronjob = cronjob.New(app.database)
-	app.cronjob.AddJob(10, func() {
+	app.cronjob.AddJob(60*60, func() {
 		websites.Scrape(app.database)
 	})
 	app.cronjob.Start()

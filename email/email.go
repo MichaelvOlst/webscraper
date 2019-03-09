@@ -2,62 +2,62 @@ package email
 
 import (
 	"bytes"
+	"html/template"
 	"net/smtp"
-	"text/template"
 )
 
-// auth = smtp.PlainAuth("", "dhanush@geektrust.in", "password", "smtp.gmail.com")
-// 	templateData := struct {
-// 		Name string
-// 		URL  string
-// 	}{
-// 		Name: "Dhanush",
-// 		URL:  "http://geektrust.in",
-// 	}
-// 	r := NewRequest([]string{"junk@junk.com"}, "Hello Junk!", "Hello, World!")
-// 	err := r.ParseTemplate("template.html", templateData)
-// 	if err := r.ParseTemplate("template.html", templateData); err == nil {
-// 		ok, _ := r.SendEmail()
-// 		fmt.Println(ok)
-// 	}
-
-//Request struct
-type Request struct {
-	from    string
-	to      []string
-	subject string
-	body    string
+// Email settings
+type Email struct {
+	config *Config
+	auth   smtp.Auth
+	tpl    *template.Template
+	body   string
 }
 
-func NewRequest(to []string, subject, body string) *Request {
-	return &Request{
-		to:      to,
-		subject: subject,
-		body:    body,
+// New returns the type email with default settings
+func New(cfg *Config) *Email {
+	auth := smtp.PlainAuth("", cfg.From, cfg.Password, cfg.Host)
+	t := template.New("Email")
+
+	return &Email{
+		config: cfg,
+		auth:   auth,
+		tpl:    t,
 	}
 }
 
-func (r *Request) SendEmail() (bool, error) {
-	mime := "MIME-version: 1.0;\nContent-Type: text/plain; charset=\"UTF-8\";\n\n"
-	subject := "Subject: " + r.subject + "!\n"
-	msg := []byte(subject + mime + "\n" + r.body)
-	addr := "smtp.gmail.com:587"
+// Send the e-mail
+func (e *Email) Send(subject string, data interface{}) (bool, error) {
 
-	if err := smtp.SendMail(addr, auth, "dhanush@geektrust.in", r.to, msg); err != nil {
+	err := e.parseData(data)
+	if err != nil {
+		return false, err
+	}
+
+	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+	subject = "Subject: " + subject + "!\n"
+	msg := []byte(subject + mime + "\n" + e.body)
+	addr := e.config.Host + ":" + e.config.Port
+
+	if err := smtp.SendMail(addr, e.auth, e.config.From, []string{e.config.To}, msg); err != nil {
 		return false, err
 	}
 	return true, nil
 }
 
-func (r *Request) ParseTemplate(templateFileName string, data interface{}) error {
-	t, err := template.ParseFiles(templateFileName)
+func (e *Email) parseData(data interface{}) error {
+
+	t, err := e.tpl.Parse(emailTpl)
 	if err != nil {
 		return err
 	}
+
 	buf := new(bytes.Buffer)
-	if err = t.Execute(buf, data); err != nil {
+	err = t.Execute(buf, data)
+	if err != nil {
 		return err
 	}
-	r.body = buf.String()
+
+	e.body = buf.String()
 	return nil
 }

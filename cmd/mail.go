@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"log"
-	"net/smtp"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
 	"michaelvanolst.nl/scraper/email"
@@ -17,33 +17,29 @@ var mailCmd = &cobra.Command{
 	Use:   "mail",
 	Short: "Print the version number of Scraper",
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println(app.config.Email)
-		// fmt.Println(app.config.Email.From)
-		// fmt.Println(app.config.Email.To)
-		// fmt.Println(app.config.Email.Password)
-		send("test from go", app.config.Email)
+
+		if app.config.Email.From == "" {
+			logrus.Error(`You need to specify the "From" emailadres in the .env file`)
+			return
+		}
+
+		if app.config.Email.To == "" {
+			logrus.Error(`You need to specify the "To" emailadres in the .env file`)
+			return
+		}
+
+		if app.config.Email.Password == "" {
+			logrus.Error(`You need to specify the "Password" field in the .env file`)
+			return
+		}
+
+		email := email.New(app.config.Email)
+		data := struct{}{}
+		_, err := email.Send("Found a website", data)
+		if err != nil {
+			logrus.Errorf("Could not send e-mail: %v\n", err)
+			return
+		}
+		fmt.Println("Mail sent")
 	},
-}
-
-func send(body string, cfg *email.Config) {
-
-	from := cfg.From
-	pass := cfg.Password
-	to := cfg.To
-
-	msg := "From: " + from + "\n" +
-		"To: " + to + "\n" +
-		"Subject: Hello there\n\n" +
-		body
-
-	err := smtp.SendMail("smtp.gmail.com:587",
-		smtp.PlainAuth("", from, pass, "smtp.gmail.com"),
-		from, []string{to}, []byte(msg))
-
-	if err != nil {
-		log.Printf("smtp error: %s", err)
-		return
-	}
-
-	fmt.Println("email sent")
 }

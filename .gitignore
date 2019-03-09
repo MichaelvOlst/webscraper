@@ -2,5 +2,5 @@
 *.exe~
 scraper
 scraper.db
-config.json
+.config.json
 .env
