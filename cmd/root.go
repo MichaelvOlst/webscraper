@@ -57,11 +57,10 @@ func initApp() {
 	}
 
 	app.cronjob = cronjob.New(app.database)
-	app.cronjob.AddJob(60*60, func() {
-		websites.Scrape(app.database)
+	app.cronjob.AddJob(3600, func() {
+		websites.Scrape(app.database, app.config.Email)
 	})
 	app.cronjob.Start()
-
 }
 
 var rootCmd = &cobra.Command{

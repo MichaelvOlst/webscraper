@@ -1,7 +1,6 @@
 package email
 
 var emailTpl = `
-
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
@@ -121,7 +120,7 @@ var emailTpl = `
 			padding-top: 25px;
 			color: #000000;
 			font-family: sans-serif;" class="header">
-                            Found a new house!
+                            Found a website!
                         </td>
                     </tr>
 
@@ -130,10 +129,10 @@ var emailTpl = `
                         <td align="center" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0;
             padding-top: 20px;" class="hero">
                             <a target="_blank" style="text-decoration: none;"
-                                href="https://www.floberg.nl/aanbod/woningaanbod/huizen/huur/huis-4477955-Zomerkade-260/">
+                                href="{{.URL}}">
                                 <img border="0" vspace="0" hspace="0"
-                                    src="https://images.realworks.nl/servlets/images/media.objectmedia/74799095.jpg?height=280&check=sha256%3A0f8e9c214e84ccac9d1fce982cfacf0273d19f57532eb9fcaaf98d194c8f51a6&width=420&resize=5"
-                                    alt="Zomerkade 260" title="Zomerkade 260" width="560"
+                                    src="{{.ImageURL}}"
+                                    alt="{{.Address}}" title="{{.Address}}" width="560"
                                     style="
                     width: 100%;
                     max-width: 560px;
@@ -149,8 +148,8 @@ var emailTpl = `
 			padding-top: 25px; 
 			color: #000000;
 			font-family: sans-serif;" class="paragraph">
-                            Friesewal 93 <br />
-                            € 312.500,- k.k.
+                            {{.Address}} <br />
+                            {{.Price}}
                         </td>
                     </tr>
 
@@ -160,7 +159,7 @@ var emailTpl = `
                         <td align="center" valign="top" style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; padding-left: 6.25%; padding-right: 6.25%; width: 87.5%;
 			padding-top: 25px;
 			padding-bottom: 5px;" class="button"><a
-                                href="https://www.floberg.nl/aanbod/woningaanbod/huizen/huur/huis-4477955-Zomerkade-260/"
+                                href="{{.URL}}"
                                 target="_blank" style="text-decoration: underline;">
                                 <table border="0" cellpadding="0" cellspacing="0" align="center"
                                     style="max-width: 240px; min-width: 120px; border-collapse: collapse; border-spacing: 0; padding: 0;">
@@ -169,8 +168,8 @@ var emailTpl = `
                                             style="padding: 12px 24px; margin: 0; text-decoration: underline; border-collapse: collapse; border-spacing: 0; border-radius: 4px; -webkit-border-radius: 4px; -moz-border-radius: 4px; -khtml-border-radius: 4px;"
                                             bgcolor="#E9703E"><a target="_blank" style="text-decoration: underline;
 					color: #FFFFFF; font-family: sans-serif; font-size: 17px; font-weight: 400; line-height: 120%;"
-                                                href="https://www.floberg.nl/aanbod/woningaanbod/huizen/huur/huis-4477955-Zomerkade-260/">
-                                                Friesewal 93
+                                                href="{{.URL}}">
+                                                {{.Address}}
                                             </a>
                                         </td>
                                     </tr>
@@ -212,4 +211,5 @@ var emailTpl = `
 </body>
 
 </html>
+
 `

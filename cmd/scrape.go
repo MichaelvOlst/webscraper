@@ -14,7 +14,7 @@ var scrapeCmd = &cobra.Command{
 	Short: "Scrape the save urls",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		websites.Scrape(app.database)
+		websites.Scrape(app.database, app.config.Email)
 
 	},
 }

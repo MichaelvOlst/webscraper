@@ -10,6 +10,8 @@ import (
 	"strings"
 	"sync"
 
+	"michaelvanolst.nl/scraper/email"
+
 	"michaelvanolst.nl/scraper/datastore"
 	"michaelvanolst.nl/scraper/models"
 
@@ -18,7 +20,7 @@ import (
 )
 
 // Scrape scrapes the saved websites
-func Scrape(db datastore.Datastore) {
+func Scrape(db datastore.Datastore, emailCfg *email.Config) {
 	urls, err := db.GetWebsites()
 
 	if err != nil {
@@ -37,7 +39,7 @@ func Scrape(db datastore.Datastore) {
 
 	for _, url := range urls {
 		logrus.Println("Scraping url " + url.URL)
-		go makeRequest(url, ch, &wg, db)
+		go makeRequest(url, ch, &wg, db, emailCfg)
 	}
 
 	wg.Wait()
@@ -52,7 +54,7 @@ type response struct {
 	error  error
 }
 
-func makeRequest(w *models.Website, ch chan<- response, wg *sync.WaitGroup, db datastore.Datastore) {
+func makeRequest(w *models.Website, ch chan<- response, wg *sync.WaitGroup, db datastore.Datastore, emailCfg *email.Config) {
 	// start := time.Now()
 	defer wg.Done()
 	r, err := http.Get(w.URL)
@@ -101,11 +103,30 @@ func makeRequest(w *models.Website, ch chan<- response, wg *sync.WaitGroup, db d
 			l.ImageURL = imageURL
 
 			err = db.SaveLink(&l)
-			if err != nil {
-				logrus.Println(err)
+			if err == nil {
+				// fmt.Printf("%s %s %s --- %s%s\n", address, status, price, websiteURL, link)
+				fmt.Printf("Found a new house %s - %s \n", address, price)
+
+				td := struct {
+					Address  string
+					URL      string
+					ImageURL string
+					Price    string
+				}{
+					Address:  l.Address,
+					URL:      l.URL,
+					ImageURL: l.ImageURL,
+					Price:    l.Price,
+				}
+				e := email.New(emailCfg)
+				_, err := e.Send("Found a new house", td)
+				if err != nil {
+					fmt.Printf("Error send e-mail %v\n", err)
+				}
 			}
-			//  else {
+			// else {
 			// 	// fmt.Printf("%s %s %s --- %s%s\n", address, status, price, websiteURL, link)
+			// 	fmt.Printf("Found a new house %s - %s \n", address, price)
 			// }
 
 		}
